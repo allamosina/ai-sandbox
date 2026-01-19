@@ -1,0 +1,28 @@
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies (if added in future)
+node_modules/
+
+# Build outputs (if added in future)
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+
+# Test coverage (if added in future)
+coverage/
