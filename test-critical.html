@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Snake - Critical Tests</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0e27;
+      color: #00ffff;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #ff00ff;
+      text-align: center;
+      border-bottom: 2px solid #00ffff;
+      padding-bottom: 10px;
+    }
+    .test-section {
+      margin: 20px 0;
+      border: 1px solid #00ffff;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    .test-case {
+      margin: 10px 0;
+      padding: 10px;
+      background: rgba(0, 255, 255, 0.05);
+      border-left: 3px solid #666;
+    }
+    .test-case.pass {
+      border-left-color: #00ff00;
+    }
+    .test-case.fail {
+      border-left-color: #ff0000;
+    }
+    .test-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .test-result {
+      margin-left: 20px;
+      font-size: 0.9em;
+    }
+    .pass { color: #00ff00; }
+    .fail { color: #ff0000; }
+    .info { color: #ffff00; }
+    button {
+      background: #00ffff;
+      color: #0a0e27;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 10px 5px;
+      border-radius: 3px;
+    }
+    button:hover {
+      background: #ff00ff;
+    }
+    #summary {
+      margin: 20px 0;
+      padding: 15px;
+      background: rgba(255, 0, 255, 0.1);
+      border: 2px solid #ff00ff;
+      border-radius: 5px;
+      font-size: 1.2em;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 NEON SNAKE - CRITICAL TESTS 🎮</h1>
+
+  <div>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+    <button onclick="window.location.href='index.html'">Back to Game</button>
+  </div>
+
+  <div id="summary" class="hidden"></div>
+  <div id="test-results"></div>
+
+  <script type="module">
+    import { Game } from './game.js';
+    import { DIFFICULTY_SPEEDS, DIRECTIONS, CANVAS_SIZE, GRID_SIZE, CELL_SIZE, POINTS_PER_FOOD } from './constants.js';
+    import { getHighScore, setHighScore, clearHighScores, getAllHighScores } from './storage.js';
+
+    // Test results tracking
+    let testResults = {
+      total: 0,
+      passed: 0,
+      failed: 0,
+      tests: []
+    };
+
+    // Helper functions
+    function createCanvas() {
+      const canvas = document.createElement('canvas');
+      canvas.width = CANVAS_SIZE;
+      canvas.height = CANVAS_SIZE;
+      return canvas;
+    }
+
+    function log(testName, result, message) {
+      testResults.total++;
+      if (result) {
+        testResults.passed++;
+      } else {
+        testResults.failed++;
+      }
+      testResults.tests.push({ testName, result, message });
+    }
+
+    function displayResults() {
+      const resultsDiv = document.getElementById('test-results');
+      const summaryDiv = document.getElementById('summary');
+
+      // Clear previous results
+      resultsDiv.innerHTML = '';
+
+      // Group tests by section
+      const sections = {};
+      testResults.tests.forEach(test => {
+        const section = test.testName.split(':')[0];
+        if (!sections[section]) {
+          sections[section] = [];
+        }
+        sections[section].push(test);
+      });
+
+      // Display sections
+      Object.keys(sections).forEach(section => {
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'test-section';
+        sectionDiv.innerHTML = `<h2>${section}</h2>`;
+
+        sections[section].forEach(test => {
+          const testDiv = document.createElement('div');
+          testDiv.className = `test-case ${test.result ? 'pass' : 'fail'}`;
+          testDiv.innerHTML = `
+            <div class="test-name">${test.testName}</div>
+            <div class="test-result ${test.result ? 'pass' : 'fail'}">
+              ${test.result ? '✓ PASS' : '✗ FAIL'}: ${test.message}
+            </div>
+          `;
+          sectionDiv.appendChild(testDiv);
+        });
+
+        resultsDiv.appendChild(sectionDiv);
+      });
+
+      // Display summary
+      const passRate = ((testResults.passed / testResults.total) * 100).toFixed(1);
+      summaryDiv.className = '';
+      summaryDiv.innerHTML = `
+        <strong>TEST SUMMARY</strong><br>
+        Total: ${testResults.total} |
+        <span class="pass">Passed: ${testResults.passed}</span> |
+        <span class="fail">Failed: ${testResults.failed}</span> |
+        Pass Rate: ${passRate}%
+      `;
+    }
+
+    // TEST SUITE
+    async function runAllTests() {
+      // Reset results
+      testResults = { total: 0, passed: 0, failed: 0, tests: [] };
+
+      console.log('Starting Critical Tests...');
+
+      // TC-INIT-001: Game Initialization
+      testGameInitialization();
+
+      // TC-CONST-001: Constants Validation
+      testConstants();
+
+      // TC-GAME-001: Game Object Creation
+      testGameObjectCreation();
+
+      // TC-MOVE-001: Direction Controls
+      testDirectionControls();
+
+      // TC-FOOD-001: Food Collision
+      testFoodCollision();
+
+      // TC-COLL-001: Wall Collision
+      testWallCollision();
+
+      // TC-COLL-002: Self Collision
+      testSelfCollision();
+
+      // TC-STORE-001: LocalStorage
+      testLocalStorage();
+
+      // TC-SCORE-001: Scoring
+      testScoring();
+
+      // TC-PAUSE-001: Pause/Resume
+      testPauseResume();
+
+      // Display results
+      displayResults();
+      console.log('Tests completed!', testResults);
+    }
+
+    function testGameInitialization() {
+      try {
+        const canvas = createCanvas();
+        const result = canvas.width === CANVAS_SIZE && canvas.height === CANVAS_SIZE;
+        log('INIT: Canvas Creation', result,
+          result ? `Canvas is ${CANVAS_SIZE}x${CANVAS_SIZE}` : 'Canvas size incorrect');
+      } catch (e) {
+        log('INIT: Canvas Creation', false, `Error: ${e.message}`);
+      }
+    }
+
+    function testConstants() {
+      let passed = true;
+      let messages = [];
+
+      // Grid size
+      if (GRID_SIZE !== 20) {
+        passed = false;
+        messages.push('GRID_SIZE should be 20');
+      }
+
+      // Cell size
+      if (CELL_SIZE !== 20) {
+        passed = false;
+        messages.push('CELL_SIZE should be 20');
+      }
+
+      // Canvas size
+      if (CANVAS_SIZE !== 400) {
+        passed = false;
+        messages.push('CANVAS_SIZE should be 400');
+      }
+
+      // Difficulty speeds
+      if (DIFFICULTY_SPEEDS.easy !== 150 || DIFFICULTY_SPEEDS.medium !== 100 || DIFFICULTY_SPEEDS.hard !== 60) {
+        passed = false;
+        messages.push('Difficulty speeds incorrect');
+      }
+
+      log('CONSTANTS: Configuration Values', passed,
+        passed ? 'All constants correct' : messages.join(', '));
+    }
+
+    function testGameObjectCreation() {
+      try {
+        const canvas = createCanvas();
+        let scoreUpdated = false;
+        let gameOverCalled = false;
+
+        const game = new Game(
+          canvas,
+          (score) => { scoreUpdated = true; },
+          (score) => { gameOverCalled = true; }
+        );
+
+        const result = game !== null && game.snake !== undefined && game.food !== undefined;
+        log('GAME: Object Creation', result,
+          result ? 'Game object created successfully' : 'Failed to create game object');
+
+        // Test initial state
+        const initialState = game.score === 0 && !game.isRunning && !game.isPaused;
+        log('GAME: Initial State', initialState,
+          initialState ? 'Initial state correct (score=0, not running)' : 'Initial state incorrect');
+
+      } catch (e) {
+        log('GAME: Object Creation', false, `Error: ${e.message}`);
+        log('GAME: Initial State', false, `Error: ${e.message}`);
+      }
+    }
+
+    function testDirectionControls() {
+      try {
+        const canvas = createCanvas();
+        const game = new Game(canvas, ()=>{}, ()=>{});
+
+        // Test all directions
+        game.setDirection(DIRECTIONS.UP);
+        const upSet = game.snake.nextDirection === DIRECTIONS.UP;
+
+        game.setDirection(DIRECTIONS.RIGHT);
+        const rightSet = game.snake.nextDirection === DIRECTIONS.RIGHT;
+
+        game.setDirection(DIRECTIONS.DOWN);
+        const downSet = game.snake.nextDirection === DIRECTIONS.DOWN;
+
+        game.setDirection(DIRECTIONS.LEFT);
+        const leftSet = game.snake.nextDirection === DIRECTIONS.LEFT;
+
+        const result = upSet && rightSet && downSet && leftSet;
+        log('MOVEMENT: Direction Setting', result,
+          result ? 'All directions set correctly' : 'Direction setting failed');
+
+        // Test reverse prevention (snake moving right, try to go left)
+        game.snake.direction = DIRECTIONS.RIGHT;
+        game.snake.nextDirection = DIRECTIONS.RIGHT;
+        game.setDirection(DIRECTIONS.LEFT);
+        game.snake.move(); // This should not reverse
+
+        const noReverse = game.snake.direction === DIRECTIONS.RIGHT;
+        log('MOVEMENT: Reverse Prevention', noReverse,
+          noReverse ? 'Cannot reverse into self' : 'Reverse prevention failed');
+
+      } catch (e) {
+        log('MOVEMENT: Direction Setting', false, `Error: ${e.message}`);
+        log('MOVEMENT: Reverse Prevention', false, `Error: ${e.message}`);
+      }
+    }
+
+    function testFoodCollision() {
+      try {
+        const canvas = createCanvas();
+        let scoreValue = 0;
+        const game = new Game(canvas, (score) => { scoreValue = score; }, ()=>{});
+
+        game.reset();
+        const initialLength = game.snake.body.length;
+        const initialScore = game.score;
+
+        // Position snake head at food
+        game.snake.body[0] = { ...game.food.position };
+
+        game.update();
+
+        const scoredPoints = scoreValue === POINTS_PER_FOOD;
+        const snakeGrew = game.snake.body.length === initialLength + 1;
+
+        log('FOOD: Collision Detection', scoredPoints && snakeGrew,
+          scoredPoints && snakeGrew ?
+            `Snake grew and scored ${POINTS_PER_FOOD} points` :
+            'Food collision not working');
+
+      } catch (e) {
+        log('FOOD: Collision Detection', false, `Error: ${e.message}`);
+      }
+    }
+
+    function testWallCollision() {
+      try {
+        const canvas = createCanvas();
+        let gameEnded = false;
+        const game = new Game(canvas, ()=>{}, () => { gameEnded = true; });
+
+        game.reset();
+
+        // Test top wall
+        game.snake.body[0] = { x: 10, y: -1 };
+        const topCollision = game.snake.checkWallCollision();
+
+        // Test bottom wall
+        game.snake.body[0] = { x: 10, y: GRID_SIZE };
+        const bottomCollision = game.snake.checkWallCollision();
+
+        // Test left wall
+        game.snake.body[0] = { x: -1, y: 10 };
+        const leftCollision = game.snake.checkWallCollision();
+
+        // Test right wall
+        game.snake.body[0] = { x: GRID_SIZE, y: 10 };
+        const rightCollision = game.snake.checkWallCollision();
+
+        const result = topCollision && bottomCollision && leftCollision && rightCollision;
+        log('COLLISION: Wall Detection', result,
+          result ? 'All wall collisions detected' : 'Wall collision detection failed');
+
+      } catch (e) {
+        log('COLLISION: Wall Detection', false, `Error: ${e.message}`);
+      }
+    }
+
+    function testSelfCollision() {
+      try {
+        const canvas = createCanvas();
+        const game = new Game(canvas, ()=>{}, ()=>{});
+
+        game.reset();
+
+        // Create a longer snake
+        game.snake.body = [
+          { x: 5, y: 5 },
+          { x: 5, y: 4 },
+          { x: 5, y: 3 },
+          { x: 5, y: 2 }
+        ];
+
+        // No collision initially
+        const noCollision = !game.snake.checkSelfCollision();
+
+        // Set head to collide with body
+        game.snake.body[0] = { x: 5, y: 3 };
+        const collision = game.snake.checkSelfCollision();
+
+        const result = noCollision && collision;
+        log('COLLISION: Self Detection', result,
+          result ? 'Self collision detected correctly' : 'Self collision detection failed');
+
+      } catch (e) {
+        log('COLLISION: Self Detection', false, `Error: ${e.message}`);
+      }
+    }
+
+    function testLocalStorage() {
+      try {
+        // Clear storage first
+        clearHighScores();
+
+        // Test setting high scores
+        setHighScore('easy', 100);
+        setHighScore('medium', 200);
+        setHighScore('hard', 300);
+
+        // Test getting high scores
+        const easy = getHighScore('easy');
+        const medium = getHighScore('medium');
+        const hard = getHighScore('hard');
+
+        const setCorrectly = easy === 100 && medium === 200 && hard === 300;
+        log('STORAGE: Save High Scores', setCorrectly,
+          setCorrectly ? 'High scores saved correctly' : 'Failed to save high scores');
+
+        // Test not updating when score is lower
+        const wasUpdated = setHighScore('easy', 50);
+        const stillHigh = getHighScore('easy') === 100;
+
+        log('STORAGE: Preserve High Score', !wasUpdated && stillHigh,
+          !wasUpdated && stillHigh ? 'Lower scores rejected' : 'High score overwritten incorrectly');
+
+        // Test getting all scores
+        const allScores = getAllHighScores();
+        const allCorrect = allScores.easy === 100 && allScores.medium === 200 && allScores.hard === 300;
+
+        log('STORAGE: Get All Scores', allCorrect,
+          allCorrect ? 'getAllHighScores works correctly' : 'Failed to get all scores');
+
+        // Clean up
+        clearHighScores();
+
+      } catch (e) {
+        log('STORAGE: Save High Scores', false, `Error: ${e.message}`);
+        log('STORAGE: Preserve High Score', false, `Error: ${e.message}`);
+        log('STORAGE: Get All Scores', false, `Error: ${e.message}`);
+      }
+    }
+
+    function testScoring() {
+      try {
+        const canvas = createCanvas();
+        let currentScore = 0;
+        const game = new Game(canvas, (score) => { currentScore = score; }, ()=>{});
+
+        game.reset();
+
+        // Simulate eating 3 foods
+        for (let i = 0; i < 3; i++) {
+          game.snake.body[0] = { ...game.food.position };
+          game.update();
+        }
+
+        const expectedScore = 3 * POINTS_PER_FOOD;
+        const result = currentScore === expectedScore;
+
+        log('SCORING: Point Accumulation', result,
+          result ? `Score correctly: ${currentScore} points` : `Expected ${expectedScore}, got ${currentScore}`);
+
+      } catch (e) {
+        log('SCORING: Point Accumulation', false, `Error: ${e.message}`);
+      }
+    }
+
+    function testPauseResume() {
+      try {
+        const canvas = createCanvas();
+        const game = new Game(canvas, ()=>{}, ()=>{});
+
+        // Start game
+        game.start('medium', DIFFICULTY_SPEEDS.medium);
+        const isRunning = game.isRunning && !game.isPaused;
+
+        // Pause
+        game.pause();
+        const isPaused = game.isPaused;
+
+        // Resume
+        game.resume();
+        const isResumed = game.isRunning && !game.isPaused;
+
+        // Stop
+        game.stop();
+        const isStopped = !game.isRunning;
+
+        const result = isRunning && isPaused && isResumed && isStopped;
+        log('GAME: Pause/Resume/Stop', result,
+          result ? 'Game state transitions work correctly' : 'State transition failed');
+
+      } catch (e) {
+        log('GAME: Pause/Resume/Stop', false, `Error: ${e.message}`);
+      }
+    }
+
+    // Make functions available globally
+    window.runAllTests = runAllTests;
+    window.clearResults = () => {
+      document.getElementById('test-results').innerHTML = '';
+      document.getElementById('summary').className = 'hidden';
+      testResults = { total: 0, passed: 0, failed: 0, tests: [] };
+    };
+
+    // Auto-run tests on load
+    console.log('Test suite loaded. Click "Run All Tests" to start.');
+  </script>
+</body>
+</html>

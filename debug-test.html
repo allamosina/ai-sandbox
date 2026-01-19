@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snake Collision Debug</title>
+  <style>
+    canvas { border: 1px solid red; }
+  </style>
+</head>
+<body>
+  <canvas id="testCanvas" width="400" height="400"></canvas>
+  <script type="module">
+    import { GRID_SIZE, CELL_SIZE } from './constants.js';
+
+    const canvas = document.getElementById('testCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Draw grid
+    ctx.strokeStyle = '#0ff';
+    ctx.lineWidth = 0.5;
+
+    for (let i = 0; i <= GRID_SIZE; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * CELL_SIZE, 0);
+      ctx.lineTo(i * CELL_SIZE, GRID_SIZE * CELL_SIZE);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(0, i * CELL_SIZE);
+      ctx.lineTo(GRID_SIZE * CELL_SIZE, i * CELL_SIZE);
+      ctx.stroke();
+    }
+
+    // Test drawing snake at position 0 (leftmost valid position)
+    ctx.fillStyle = '#ff00ff';
+    ctx.fillRect(0 * CELL_SIZE + 1, 10 * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+
+    // Test drawing snake at position 19 (rightmost valid position)
+    ctx.fillStyle = '#00ffff';
+    ctx.fillRect(19 * CELL_SIZE + 1, 10 * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+
+    console.log('GRID_SIZE:', GRID_SIZE);
+    console.log('CELL_SIZE:', CELL_SIZE);
+    console.log('Canvas size:', canvas.width, 'x', canvas.height);
+    console.log('Calculated size:', GRID_SIZE * CELL_SIZE);
+    console.log('Left edge cell (x=0):', 0 * CELL_SIZE, 'to', 1 * CELL_SIZE);
+    console.log('Right edge cell (x=19):', 19 * CELL_SIZE, 'to', 20 * CELL_SIZE);
+  </script>
+</body>
+</html>

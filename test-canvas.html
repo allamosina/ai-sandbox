@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .game-frame {
+      position: relative;
+      background: #050714;
+      border: 3px solid rgba(0, 255, 255, 0.7);
+      width: fit-content;
+      margin: 20px;
+    }
+    canvas {
+      display: block;
+      width: 400px;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-frame">
+    <canvas id="test" width="400" height="400"></canvas>
+  </div>
+  <script>
+    const canvas = document.getElementById('test');
+    const ctx = canvas.getContext('2d');
+    
+    // Fill entire canvas with red to see actual drawing area
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, 0, 400, 400);
+    
+    // Draw white border at edge to see canvas bounds
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, 398, 398);
+    
+    // Draw grid
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 20; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * 20, 0);
+      ctx.lineTo(i * 20, 400);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.moveTo(0, i * 20);
+      ctx.lineTo(400, i * 20);
+      ctx.stroke();
+    }
+    
+    // Draw snake at position 19 (rightmost valid position)
+    ctx.fillStyle = '#00ffff';
+    ctx.fillRect(19 * 20 + 1, 10 * 20 + 1, 20 - 2, 20 - 2);
+    
+    // Draw snake at position 0 (leftmost valid position)
+    ctx.fillStyle = '#ff00ff';
+    ctx.fillRect(0 * 20 + 1, 10 * 20 + 1, 20 - 2, 20 - 2);
+    
+    console.log('Canvas internal size:', canvas.width, 'x', canvas.height);
+    console.log('Canvas CSS size:', canvas.offsetWidth, 'x', canvas.offsetHeight);
+  </script>
+</body>
+</html>
