@@ -641,6 +641,16 @@ h1, h2, h3, button {
   stroke: currentColor;
 }
 
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: flex;
+  }
+}
+
 /* Game Hint */
 .game-hint {
   text-align: center;
@@ -820,4 +830,217 @@ canvas {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
+}
+
+/* Mobile Controls */
+.mobile-dpad {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 140px;
+  height: 140px;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 4px;
+  z-index: 1001;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-dpad:active {
+  opacity: 1;
+}
+
+.dpad-btn {
+  background: rgba(0, 255, 255, 0.15);
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  color: var(--neon-cyan);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.dpad-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.dpad-btn:active::before,
+.dpad-btn.active::before {
+  opacity: 1;
+}
+
+.dpad-btn svg {
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 0 5px var(--neon-cyan));
+  position: relative;
+  z-index: 1;
+}
+
+.dpad-btn:active,
+.dpad-btn.active {
+  background: rgba(0, 255, 255, 0.3);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3);
+  transform: scale(0.95);
+}
+
+.dpad-up {
+  grid-column: 2;
+  grid-row: 1;
+  border-radius: 8px 8px 4px 4px;
+}
+
+.dpad-down {
+  grid-column: 2;
+  grid-row: 3;
+  border-radius: 4px 4px 8px 8px;
+}
+
+.dpad-left {
+  grid-column: 1;
+  grid-row: 2;
+  border-radius: 8px 4px 4px 8px;
+}
+
+.dpad-right {
+  grid-column: 3;
+  grid-row: 2;
+  border-radius: 4px 8px 8px 4px;
+}
+
+.dpad-center {
+  grid-column: 2;
+  grid-row: 2;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+/* Mobile Pause Button */
+.mobile-pause-btn {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 0, 255, 0.15);
+  border: 2px solid rgba(255, 0, 255, 0.5);
+  border-radius: 50%;
+  color: var(--neon-magenta);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  opacity: 0.8;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  padding: 0;
+}
+
+.mobile-pause-btn svg {
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 0 5px var(--neon-magenta));
+}
+
+.mobile-pause-btn:active,
+.mobile-pause-btn.active {
+  background: rgba(255, 0, 255, 0.3);
+  border-color: var(--neon-magenta);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.6), inset 0 0 10px rgba(255, 0, 255, 0.3);
+  transform: scale(0.95);
+  opacity: 1;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .controls-info {
+    font-size: 0.65rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .stats-section {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  #gameCanvas,
+  #difficultyCanvas,
+  #playCanvas {
+    width: 100%;
+    height: auto;
+    max-width: 400px;
+    aspect-ratio: 1;
+  }
+
+  .game-frame {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-title {
+    font-size: 1.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .screen-title {
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+  }
+
+  .overlay-title {
+    font-size: 1.8rem;
+  }
+
+  .mobile-dpad {
+    width: 120px;
+    height: 120px;
+    bottom: 15px;
+    left: 15px;
+  }
+
+  .dpad-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .mobile-pause-btn {
+    width: 50px;
+    height: 50px;
+    bottom: 15px;
+    right: 15px;
+  }
+
+  .mobile-pause-btn svg {
+    width: 24px;
+    height: 24px;
+  }
 }

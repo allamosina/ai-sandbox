@@ -2,6 +2,7 @@
 import { Game } from './game.js';
 import { DIFFICULTY_SPEEDS, KEYS, DIRECTIONS, CANVAS_SIZE } from './constants.js';
 import { getHighScore, setHighScore } from './storage.js';
+import { MobileControls } from './mobile-controls.js';
 
 // Difficulty labels
 const DIFFICULTY_LABELS = {
@@ -45,6 +46,9 @@ class GameUI {
     this.highScoreMedium = document.getElementById('highScoreMedium');
     this.highScoreHard = document.getElementById('highScoreHard');
 
+    // Mobile controls
+    this.mobileControls = null;
+
     this.init();
   }
 
@@ -68,11 +72,21 @@ class GameUI {
     // Set up event listeners
     this.setupEventListeners();
 
+    // Initialize mobile controls
+    this.initMobileControls();
+
     // Load and display all high scores
     this.loadAllHighScores();
 
     // Show start screen
     this.showStartScreen();
+  }
+
+  initMobileControls() {
+    this.mobileControls = new MobileControls(
+      (direction) => this.game.setDirection(direction),
+      () => this.togglePause()
+    );
   }
 
   setupEventListeners() {

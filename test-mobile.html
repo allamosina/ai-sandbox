@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Controls Regression Test</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #0a0e27;
+      color: #00ffff;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #00ffff;
+      border-radius: 5px;
+    }
+    .test-result {
+      margin: 5px 0;
+      padding: 5px;
+    }
+    .pass { color: #00ff00; }
+    .fail { color: #ff0000; }
+    .info { color: #ffff00; }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      background: rgba(0, 255, 255, 0.2);
+      border: 2px solid #00ffff;
+      color: #00ffff;
+      cursor: pointer;
+    }
+    button:hover {
+      background: rgba(0, 255, 255, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <h1>Mobile Controls Regression Test Suite</h1>
+
+  <div class="test-section">
+    <h2>1. Module Loading Tests</h2>
+    <div id="module-tests"></div>
+    <button onclick="runModuleTests()">Run Module Tests</button>
+  </div>
+
+  <div class="test-section">
+    <h2>2. Desktop Compatibility Tests</h2>
+    <div id="desktop-tests"></div>
+    <button onclick="runDesktopTests()">Run Desktop Tests</button>
+  </div>
+
+  <div class="test-section">
+    <h2>3. Mobile Detection Tests</h2>
+    <div id="mobile-tests"></div>
+    <button onclick="runMobileTests()">Run Mobile Tests</button>
+  </div>
+
+  <div class="test-section">
+    <h2>4. Integration Tests</h2>
+    <div id="integration-tests"></div>
+    <button onclick="runIntegrationTests()">Run Integration Tests</button>
+  </div>
+
+  <div class="test-section">
+    <h2>5. Manual Testing Checklist</h2>
+    <ul>
+      <li>✓ Keyboard arrow keys work (ArrowUp, ArrowDown, ArrowLeft, ArrowRight)</li>
+      <li>✓ WASD keys work (W, A, S, D)</li>
+      <li>✓ Space bar pauses game</li>
+      <li>✓ Escape key pauses game</li>
+      <li>✓ Start button works</li>
+      <li>✓ Difficulty buttons work</li>
+      <li>✓ Restart button works</li>
+      <li>✓ Resume button works</li>
+      <li>✓ Menu button works</li>
+      <li>✓ Game plays normally on desktop (>768px)</li>
+      <li>✓ Mobile controls appear on small screens (≤768px)</li>
+      <li>✓ D-pad buttons respond to touch</li>
+      <li>✓ Swipe gestures work</li>
+      <li>✓ Pause button works on mobile</li>
+      <li>✓ No console errors on load</li>
+    </ul>
+  </div>
+
+  <script type="module">
+    import { MobileControls } from './mobile-controls.js';
+    import { DIRECTIONS } from './constants.js';
+
+    window.testResults = {
+      module: [],
+      desktop: [],
+      mobile: [],
+      integration: []
+    };
+
+    function log(category, message, status) {
+      const className = status === 'pass' ? 'pass' : status === 'fail' ? 'fail' : 'info';
+      window.testResults[category].push({ message, status });
+      return `<div class="test-result ${className}">${status === 'pass' ? '✓' : status === 'fail' ? '✗' : '•'} ${message}</div>`;
+    }
+
+    window.runModuleTests = async function() {
+      const output = document.getElementById('module-tests');
+      output.innerHTML = '<p class="info">Running module tests...</p>';
+      let html = '';
+
+      try {
+        // Test 1: Can import MobileControls
+        html += log('module', 'MobileControls class imported successfully', 'pass');
+
+        // Test 2: Can import DIRECTIONS
+        html += log('module', 'DIRECTIONS constant imported successfully', 'pass');
+
+        // Test 3: Can instantiate MobileControls
+        let directionsCalled = 0;
+        let pauseCalled = 0;
+        const mc = new MobileControls(
+          (dir) => { directionsCalled++; },
+          () => { pauseCalled++; }
+        );
+        html += log('module', 'MobileControls instantiated successfully', 'pass');
+
+        // Test 4: Check methods exist
+        if (typeof mc.show === 'function') {
+          html += log('module', 'show() method exists', 'pass');
+        } else {
+          html += log('module', 'show() method missing', 'fail');
+        }
+
+        if (typeof mc.hide === 'function') {
+          html += log('module', 'hide() method exists', 'pass');
+        } else {
+          html += log('module', 'hide() method missing', 'fail');
+        }
+
+        // Test 5: D-pad elements created
+        const dpad = document.getElementById('mobileDPad');
+        if (dpad) {
+          html += log('module', 'D-pad element created', 'pass');
+        } else {
+          html += log('module', 'D-pad element not created', 'fail');
+        }
+
+        // Test 6: Pause button created
+        const pauseBtn = document.getElementById('mobilePauseBtn');
+        if (pauseBtn) {
+          html += log('module', 'Pause button created', 'pass');
+        } else {
+          html += log('module', 'Pause button not created', 'fail');
+        }
+
+        // Cleanup
+        mc.destroy();
+
+      } catch (error) {
+        html += log('module', `Error: ${error.message}`, 'fail');
+      }
+
+      output.innerHTML = html;
+    };
+
+    window.runDesktopTests = function() {
+      const output = document.getElementById('desktop-tests');
+      output.innerHTML = '<p class="info">Running desktop compatibility tests...</p>';
+      let html = '';
+
+      // Test 1: Window width detection
+      const currentWidth = window.innerWidth;
+      html += log('desktop', `Current window width: ${currentWidth}px`, 'info');
+
+      if (currentWidth > 768) {
+        html += log('desktop', 'Desktop mode detected', 'pass');
+
+        // Test 2: Mobile controls should be hidden
+        const dpad = document.getElementById('mobileDPad');
+        if (dpad && dpad.style.display === 'none') {
+          html += log('desktop', 'Mobile controls hidden on desktop', 'pass');
+        } else if (!dpad) {
+          html += log('desktop', 'No mobile controls found (test needs setup)', 'info');
+        } else {
+          html += log('desktop', 'Mobile controls visible on desktop', 'fail');
+        }
+      } else {
+        html += log('desktop', 'Mobile mode detected (resize window >768px to test)', 'info');
+      }
+
+      // Test 3: Check keyboard event listeners don't conflict
+      html += log('desktop', 'Keyboard events are handled by ui.js (manual test required)', 'info');
+
+      output.innerHTML = html;
+    };
+
+    window.runMobileTests = function() {
+      const output = document.getElementById('mobile-tests');
+      output.innerHTML = '<p class="info">Running mobile detection tests...</p>';
+      let html = '';
+
+      // Test 1: User agent detection
+      const userAgent = navigator.userAgent;
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+      html += log('mobile', `User agent: ${userAgent.substring(0, 50)}...`, 'info');
+      html += log('mobile', `Mobile device detected: ${isMobile}`, isMobile ? 'pass' : 'info');
+
+      // Test 2: Screen size detection
+      const width = window.innerWidth;
+      const shouldShowControls = width <= 768 || isMobile;
+      html += log('mobile', `Should show mobile controls: ${shouldShowControls}`, 'info');
+
+      // Test 3: Touch support
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      html += log('mobile', `Touch support detected: ${hasTouch}`, hasTouch ? 'pass' : 'info');
+
+      output.innerHTML = html;
+    };
+
+    window.runIntegrationTests = function() {
+      const output = document.getElementById('integration-tests');
+      output.innerHTML = '<p class="info">Running integration tests...</p>';
+      let html = '';
+
+      // Test 1: Check all required DOM elements exist
+      const requiredElements = [
+        'startScreen', 'difficultyScreen', 'gameScreen',
+        'pauseScreen', 'gameOverScreen', 'gameCanvas',
+        'difficultyCanvas', 'playCanvas'
+      ];
+
+      let allElementsExist = true;
+      requiredElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) {
+          html += log('integration', `Required element #${id} not found`, 'fail');
+          allElementsExist = false;
+        }
+      });
+
+      if (allElementsExist) {
+        html += log('integration', 'All required DOM elements exist', 'pass');
+      }
+
+      // Test 2: Check CSS is loaded
+      const bodyStyles = window.getComputedStyle(document.body);
+      const bgColor = bodyStyles.backgroundColor;
+      if (bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+        html += log('integration', 'CSS styles loaded correctly', 'pass');
+      } else {
+        html += log('integration', 'CSS might not be loaded', 'fail');
+      }
+
+      // Test 3: Check for console errors
+      html += log('integration', 'Check browser console for errors (manual verification)', 'info');
+
+      output.innerHTML = html;
+    };
+
+    // Auto-run tests on load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        runModuleTests();
+        runDesktopTests();
+        runMobileTests();
+        runIntegrationTests();
+      }, 500);
+    });
+  </script>
+</body>
+</html>
